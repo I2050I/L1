@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>G14 — Weekly Timetable</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --navy: #172f50;
+      --navy-2: #213d63;
+      --bg: #f4f6f8;
+      --border: #d7dce2;
+      --text: #17202b;
+      --muted: #66717e;
+
+      --algo: #d9ead5;
+      --machine: #f1dfca;
+      --math: #f3d8d8;
+      --algebra: #f5e9a9;
+      --electricity: #cde9e7;
+      --history: #e9e4c6;
+      --software: #d9e8f4;
+    }
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ================= HEADER ================= */
+
+    .header {
+      background: var(--navy);
+      color: white;
+      padding: 22px 30px;
+    }
+
+    .header-inner {
+      max-width: 1500px;
+      margin: auto;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .logo {
+      width: 72px;
+      height: 72px;
+      border-radius: 10px;
+      background: white;
+      color: var(--navy);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      font-weight: 900;
+      flex-shrink: 0;
+    }
+
+    .logo .g14 {
+      font-size: 25px;
+      line-height: 1;
+    }
+
+    .logo small {
+      font-size: 8px;
+      margin-top: 5px;
+      letter-spacing: .5px;
+    }
+
+    .header-text {
+      flex: 1;
+    }
+
+    .header-text .eyebrow {
+      font-size: 11px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      opacity: .8;
+      margin-bottom: 5px;
+    }
+
+    .header-text h1 {
+      font-size: clamp(22px, 3vw, 34px);
+      line-height: 1.1;
+      margin-bottom: 6px;
+    }
+
+    .header-text p {
+      font-size: 13px;
+      opacity: .85;
+    }
+
+    .meta {
+      text-align: right;
+      font-size: 11px;
+      line-height: 1.6;
+      opacity: .9;
+    }
+
+    /* ================= MAIN ================= */
+
+    .container {
+      max-width: 1500px;
+      margin: 28px auto;
+      padding: 0 20px;
+    }
+
+    .card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 5px 20px rgba(20, 35, 50, .06);
+    }
+
+    /* ================= TIMETABLE ================= */
+
+    .table-wrapper {
+      overflow-x: auto;
+    }
+
+    .timetable {
+      width: 100%;
+      min-width: 1050px;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+
+    .timetable th {
+      background: var(--navy-2);
+      color: white;
+      padding: 12px 8px;
+      font-size: 13px;
+      text-align: center;
+      border-right: 1px solid rgba(255,255,255,.15);
+    }
+
+    .timetable th:first-child {
+      width: 90px;
+    }
+
+    .timetable td {
+      border: 1px solid var(--border);
+      height: 82px;
+      vertical-align: top;
+      padding: 0;
+      background: white;
+    }
+
+    .time {
+      background: #f7f8fa !important;
+      text-align: center;
+      vertical-align: middle !important;
+      color: #3e4a57;
+      font-weight: 700;
+      font-size: 12px;
+      padding: 8px !important;
+    }
+
+    .time span {
+      display: block;
+      font-weight: 400;
+      color: #8a949e;
+      margin-top: 4px;
+      font-size: 11px;
+    }
+
+    /* ================= CLASS ================= */
+
+    .class {
+      height: 100%;
+      padding: 9px 10px;
+      border-left: 5px solid transparent;
+      transition: transform .15s ease, box-shadow .15s ease;
+    }
+
+    .class:hover {
+      transform: scale(1.015);
+      box-shadow: 0 4px 15px rgba(0,0,0,.12);
+      position: relative;
+      z-index: 3;
+    }
+
+    .class .subject {
+      font-size: 12px;
+      font-weight: 800;
+      margin-bottom: 5px;
+    }
+
+    .class .type {
+      display: inline-block;
+      font-size: 8px;
+      font-weight: 800;
+      color: white;
+      background: rgba(0,0,0,.55);
+      padding: 3px 5px;
+      border-radius: 3px;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+    }
+
+    .class .info {
+      font-size: 9px;
+      line-height: 1.45;
+      color: #4f5a65;
+    }
+
+    .class .info strong {
+      color: #303942;
+    }
+
+    /* SUBJECT COLORS */
+
+    .algo {
+      background: var(--algo);
+      border-left-color: #61a463;
+    }
+
+    .machine {
+      background: var(--machine);
+      border-left-color: #cf8540;
+    }
+
+    .math {
+      background: var(--math);
+      border-left-color: #cf6666;
+    }
+
+    .algebra {
+      background: var(--algebra);
+      border-left-color: #d3b82f;
+    }
+
+    .electricity {
+      background: var(--electricity);
+      border-left-color: #43a7a0;
+    }
+
+    .history {
+      background: var(--history);
+      border-left-color: #aaa05b;
+    }
+
+    .software {
+      background: var(--software);
+      border-left-color: #659ac1;
+    }
+
+    .empty {
+      background: #fff;
+    }
+
+    /* ================= BREAK ================= */
+
+    .break-row td {
+      height: 25px;
+      background: #f5f5f5;
+      text-align: center;
+      vertical-align: middle;
+      font-size: 9px;
+      font-weight: 700;
+      color: #777;
+      letter-spacing: 1px;
+    }
+
+    /* ================= FOOTER ================= */
+
+    .bottom {
+      padding: 18px 22px;
+      border-top: 1px solid var(--border);
+      background: #fff;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: #505b66;
+    }
+
+    .dot {
+      width: 13px;
+      height: 13px;
+      border-radius: 2px;
+    }
+
+    .summary {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    /* ================= MOBILE ================= */
+
+    @media (max-width: 700px) {
+      .header {
+        padding: 16px;
+      }
+
+      .header-inner {
+        align-items: flex-start;
+      }
+
+      .logo {
+        width: 58px;
+        height: 58px;
+      }
+
+      .logo .g14 {
+        font-size: 20px;
+      }
+
+      .meta {
+        display: none;
+      }
+
+      .container {
+        margin: 15px auto;
+        padding: 0 10px;
+      }
+
+      .header-text h1 {
+        font-size: 21px;
+      }
+
+      .header-text p {
+        font-size: 11px;
+      }
+
+      .card {
+        border-radius: 7px;
+      }
+
+      .table-wrapper {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-inner">
+
+      <div class="logo">
+        <div class="g14">G14</div>
+        <small>SECTION</small>
+      </div>
+
+      <div class="header-text">
+        <div class="eyebrow">
+          Bachelor Degree · Computer Systems · First Year (L1)
+        </div>
+
+        <h1>Weekly Timetable — Group 14</h1>
+
+        <p>
+          Semester 1 · Faculty of Technology · Computer Science Department
+        </p>
+      </div>
+
+      <div class="meta">
+        <div><strong>Semester 1</strong></div>
+        <div>Weekly Schedule</div>
+        <div>Group G14</div>
+      </div>
+
+    </div>
+  </header>
+
+
+  <!-- MAIN -->
+  <main class="container">
+
+    <div class="card">
+
+      <div class="table-wrapper">
+
+        <table class="timetable">
+
+          <thead>
+            <tr>
+              <th>TIME</th>
+              <th>Saturday</th>
+              <th>Sunday</th>
+              <th>Monday</th>
+              <th>Tuesday</th>
+              <th>Wednesday</th>
+              <th>Thursday</th>
+            </tr>
+          </thead>
+
+          <tbody>
+
+            <!-- 08:00 - 09:30 -->
+            <tr>
+
+              <td class="time">
+                08:00
+                <span>09:30</span>
+              </td>
+
+              <td class="empty"></td>
+
+              <td class="empty"></td>
+
+              <td class="empty"></td>
+
+              <td>
+                <div class="class math">
+                  <div class="subject">Math analysis 1</div>
+                  <div class="type">Lecture</div>
+                  <div class="info">
+                    Teacher: <strong>Mme Chaouch</strong><br>
+                    Room: A/16
+                  </div>
+                </div>
+              </td>
+
+              <td>
+                <div class="class algo">
+                  <div class="subject">Algorithmics 1</div>
+                  <div class="type">Practical (TP)</div>
+                  <div class="info">
+                    Teacher: <strong>Zegbib</strong><br>
+                    Room: S1
+                  </div>
+                </div>
+              </td>
+
+              <td class="empty"></td>
+
+            </tr>
+
+
+            <!-- 09:30 - 11:00 -->
+            <tr>
+
+              <td class="time">
+                09:30
+                <span>11:00</span>
+              </td>
+
+              <td class="empty"></td>
+
+              <td class="empty"></td>
+
+              <td>
+                <div class="class algo">
+                  <div class="subject">Algorithmics 1</div>
+                  <div class="type">Lecture</div>
+                  <div class="info">
+                    Teacher: <strong>Pr. Bahi</strong><br>
+                    Room: A/16
+                  </div>
+                </div>
+              </td>
+
+              <td>
+                <div class="class algo">
+                  <div class="subject">Algorithmics 1</div>
+                  <div class="type">Lecture</div>
+                  <div class="info">
+                    Teacher: <strong>Pr. Bahi</strong><br>
+                    Room: A/16
+                  </div>
+                </div>
+              </td>
+
+              <td>
+                <div class="class machine">
+                  <div class="subject">Machine structure 1</div>
+                  <div class="type">Lecture</div>
+                  <div class="info">
+                    Teacher: <strong>Mme Kobsi</strong><br>
+                    Room: A/12
+                  </div>
+                </div>
+              </td>
+
+              <td>
+                <div class="class algebra">
+                  <div class="subject">Algebra 1</div>
+                  <div class="type">Lecture</div>
+                  <div class="info">
+                    Teacher: <strong>Dr. Neg...</strong><br>
+                    Room: A/16
+                  </div>
+                </div>
+              </td>
+
+            </tr>
+
+
+            <!-- 11:00 - 12:30 -->
+            <tr>
+
+              <td class="time">
+                11:00
+                <span>12:30</span>
+              </td>
+
+              <td>
+                <div class="class electricity">
+                  <div class="subject">Basic electricity</div>
+                  <div class="type">Lecture</div>
+                  <div class="info">
+                    Teacher: <strong>Dr. Kilah</strong><br>
+                    Room: A/12
+                  </div>
+                </div>
+              </td>
+
+              <td>
+                <div class="class math">
+                  <div class="subject">Math analysis 1</div>
+                  <div class="type">Lecture</div>
+                  <div class="info">
+                    Teacher: <strong>Mme Chaouch</strong><br>
+                    Room: A/12
+                  </div>
+                </div>
+              </td>
+
+              <td>
+                <div class="class math">
+                  <div class="subject">Math analysis 1</div>
+                  <div class="type">Tutorial (TD)</div>
+                  <div class="info">
+                    Teacher: <strong>not listed</strong><br>
+                    Room: B25
+                  </div>
+                </div>
+              </td>
+
+              <td>
+                <div class="class machine">
+                  <div class="subject">Machine structure 1</div>
+                  <div class="type">Tutorial (TD)</div>
+                  <div class="info">
+                    Teacher: <strong>Amriouche</strong><br>
+                    Room: not listed
+                  </div>
+                </div>
+              </td>
+
+              <td>
+                <div class="class algo">
+                  <div class="subject">Algorithmics 1</div>
+                  <div class="type">Tutorial (TD)</div>
+                  <div class="info">
+                    Teacher: <strong>Chebli</strong><br>
+                    Room: B22
+                  </div>
+                </div>
+              </td>
+
+              <td>
+                <div class="class algebra">
+                  <div class="subject">Algebra 1</div>
+                  <div class="type">Tutorial (TD)</div>
+                  <div class="info">
+                    Teacher: <strong>Djeridi</strong><br>
+                    Room: B23
+                  </div>
+                </div>
+              </td>
+
+            </tr>
+
+
+            <!-- BREAK -->
+            <tr class="break-row">
+
+              <td colspan="7">
+                BREAK · 12:30 — 13:00
+              </td>
+
+            </tr>
+
+
+            <!-- 13:00 - 14:30 -->
+            <tr>
+
+              <td class="time">
+                13:00
+                <span>14:30</span>
+              </td>
+
+              <td>
+                <div class="class history">
+                  <div class="subject">History</div>
+                  <div class="type">Lecture</div>
+                  <div class="info">
+                    Teacher: <strong>not listed</strong><br>
+                    Room: Online
+                  </div>
+                </div>
+              </td>
+
+              <td>
+                <div class="class electricity">
+                  <div class="subject">Basic electricity</div>
+                  <div class="type">Tutorial (TD)</div>
+                  <div class="info">
+                    Teacher: <strong>not listed</strong><br>
+                    Room: B21
+                  </div>
+                </div>
+              </td>
+
+              <td class="empty"></td>
+              <td class="empty"></td>
+              <td class="empty"></td>
+              <td class="empty"></td>
+
+            </tr>
+
+
+            <!-- 14:30 - 16:00 -->
+            <tr>
+
+              <td class="time">
+                14:30
+                <span>16:00</span>
+              </td>
+
+              <td>
+                <div class="class software">
+                  <div class="subject">Free software (open source)</div>
+                  <div class="type">Lecture</div>
+                  <div class="info">
+                    Teacher: <strong>Dr. Dendani B.</strong><br>
+                    Room: Online
+                  </div>
+                </div>
+              </td>
+
+              <td class="empty"></td>
+              <td class="empty"></td>
+              <td class="empty"></td>
+              <td class="empty"></td>
+              <td class="empty"></td>
+
+            </tr>
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+
+      <!-- LEGEND -->
+      <div class="bottom">
+
+        <div class="legend">
+
+          <div class="legend-item">
+            <span class="dot algo"></span>
+            Algorithmics 1
+          </div>
+
+          <div class="legend-item">
+            <span class="dot machine"></span>
+            Machine structure 1
+          </div>
+
+          <div class="legend-item">
+            <span class="dot math"></span>
+            Math analysis 1
+          </div>
+
+          <div class="legend-item">
+            <span class="dot algebra"></span>
+            Algebra 1
+          </div>
+
+          <div class="legend-item">
+            <span class="dot electricity"></span>
+            Basic electricity
+          </div>
+
+          <div class="legend-item">
+            <span class="dot history"></span>
+            History
+          </div>
+
+          <div class="legend-item">
+            <span class="dot software"></span>
+            Free software
+          </div>
+
+        </div>
+
+
+        <div class="summary">
+
+          <span>
+            <strong>Session types:</strong>
+            Lecture · Tutorial (TD) · Practical (TP) · Online
+          </span>
+
+          <span>
+            <strong>Weekly load:</strong> 15 sessions
+          </span>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+</body>
+</html>
